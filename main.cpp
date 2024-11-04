@@ -1,6 +1,8 @@
 #include "include/libmem/libmem.hpp"
 #include "include/console.hpp"
-#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+
 
 int (*o_GetFileVersionInfoA)(const char *lptstrFilename, unsigned long  dwHandle, unsigned long  dwLen, void *lpData);
 int (*o_GetFileVersionInfoW)(const wchar_t *lptstrFilename, unsigned long  dwHandle, unsigned long  dwLen, void *lpData);
@@ -54,6 +56,15 @@ bool PatchChecksum(){
 		return EXIT_FAILURE;
 	}
 	//todo patch
+	auto address = libmem::SigScan("48 8B 12 48 8D 0D ? ? ? ? E8 ? ? ? ? 8B F8", StellarisModule->base, StellarisModule->size);
+	if(!address.has_value()){
+		printf("%s\n", "Patten not found. exiting...");
+		return EXIT_FAILURE;
+	}
+	uint8_t bytes[7];
+	printf("assembly: %s\n", libmem::Disassemble(libmem::ReadMemory(address.value() + 3, bytes, 7)).value().op_str.c_str());
+	//libmem::WriteMemory(address.value() + 3, "");
+
 	return EXIT_SUCCESS;
 }
 
